@@ -1,4 +1,3 @@
-# newmatrixgame
 import tkinter as tk
 from tkinter import messagebox
 import numpy as np
@@ -12,8 +11,6 @@ class MatrixGame:
         self.root.resizable(True, True)
         
         self.matrix_size = 3
-        self.generate_matrices()
-        
         self.task = tk.StringVar(value="Transpose")
         self.entries = []
         self.resize_id = None
@@ -46,11 +43,9 @@ class MatrixGame:
             "CGI in movies uses transformation matrices to animate realistic motion and effects."
         ]
 
-        # Center frame
         self.main_frame = tk.Frame(root)
         self.main_frame.pack(expand=True)
 
-        # Task Selection
         self.task_label = tk.Label(self.main_frame, text="Select Task:", font=("Arial", 14))
         self.task_label.grid(row=0, column=0, pady=5, sticky="ew")
 
@@ -58,29 +53,29 @@ class MatrixGame:
         self.task_menu.config(font=("Arial", 14), width=10)
         self.task_menu.grid(row=0, column=1, pady=5, sticky="ew")
         
-        # Rules Button
         self.rules_button = tk.Button(self.main_frame, text="Rules", font=("Arial", 14), command=self.show_rules)
         self.rules_button.grid(row=0, column=2, pady=5, padx=10, sticky="ew")
 
-        # Matrix Display
         self.matrix_frame_A = tk.Frame(self.main_frame)
         self.matrix_frame_A.grid(row=1, column=0, pady=5)
 
         self.matrix_frame_B = tk.Frame(self.main_frame)
         self.matrix_frame_B.grid(row=1, column=2, pady=5)
 
-        # Operator sign
         self.operator_label = tk.Label(self.main_frame, text="", font=("Arial", 18, "bold"))
         self.operator_label.grid(row=1, column=1)
 
-        # Input Grid
         self.input_frame = tk.Frame(self.main_frame)
         self.input_frame.grid(row=2, column=0, columnspan=3, pady=10)
 
-        # Check Answer Button
         self.check_button = tk.Button(self.main_frame, text="Check Answer", font=("Arial", 14, "bold"), command=self.check_answers)
         self.check_button.grid(row=3, column=0, columnspan=3, pady=10, sticky="ew")
 
+        # Optional: Add a "New Problem" button
+        self.new_problem_button = tk.Button(self.main_frame, text="New Problem", font=("Arial", 12), command=self.new_problem)
+        self.new_problem_button.grid(row=4, column=0, columnspan=3, pady=5)
+
+        self.generate_matrices()
         self.update_task(self.task.get())
         self.root.bind("<Configure>", self.debounce_resize)
 
@@ -96,7 +91,7 @@ class MatrixGame:
             "Enter your answer in the input grid and press 'Check Answer' to see if you're correct!"
         )
         messagebox.showinfo("Matrix Rules", rules_text)
-    
+
     def generate_matrices(self):
         self.matrix_A = np.random.randint(1, 10, (self.matrix_size, self.matrix_size))
         self.matrix_B = np.random.randint(1, 10, (self.matrix_size, self.matrix_size))
@@ -118,8 +113,6 @@ class MatrixGame:
             self.matrix_frame_B.grid_remove()
             self.operator_label.config(text="")
             self.operator_label.grid_remove()
-            self.matrix_frame_A.grid(row=1, column=1, pady=5)
-            return
 
         self.matrix_frame_A.grid(row=1, column=0, pady=5)
 
@@ -144,6 +137,7 @@ class MatrixGame:
             self.entries.append(row_entries)
 
     def update_task(self, selected_task):
+        self.generate_matrices()
         self.update_matrix_display()
         self.create_input_grid()
 
@@ -181,11 +175,16 @@ class MatrixGame:
         elif self.task.get() == "Multiplication":
             return np.dot(self.matrix_A, self.matrix_B)
 
+    def new_problem(self):
+        self.generate_matrices()
+        self.update_matrix_display()
+        self.create_input_grid()
+
     def debounce_resize(self, event):
         if self.resize_id:
             self.root.after_cancel(self.resize_id)
         self.resize_id = self.root.after(200, self.on_resize)
-    
+
     def on_resize(self):
         width = self.root.winfo_width()
         new_size = max(14, width // 40)
@@ -201,11 +200,14 @@ class MatrixGame:
         for widget in self.matrix_frame_B.winfo_children():
             widget.config(font=("Arial", matrix_size, "bold"))
 
-        for row in self.entries:
-            for entry in row:
-                entry.config(font=("Arial", matrix_size))
+        if self.entries:
+            for row in self.entries:
+                for entry in row:
+                    entry.config(font=("Arial", matrix_size))
+
 
 if __name__ == "__main__":
     root = tk.Tk()
     game = MatrixGame(root)
     root.mainloop()
+
